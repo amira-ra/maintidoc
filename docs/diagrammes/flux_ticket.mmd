@@ -1,0 +1,20 @@
+sequenceDiagram
+  actor T as Technicien
+  participant G as LangGraph
+  participant UI as Interface
+  participant M as Serveur MCP
+  T->>G: « prépare un ticket »
+  G->>G: ticket_draft (équipement, titre, description, sources)
+  G->>UI: brouillon affiché, graphe en pause
+  Note over UI: CP2 : l'utilisateur lit le contenu exact
+  T->>UI: approuve (ou modifie, donc nouvelle validation)
+  UI->>M: create_ticket(equipment_id, title, description, approval_token, idempotency_key)
+  M->>M: vérifie droits, jeton lié à l'utilisateur et au contenu, clé déjà vue ?
+  alt jeton valide et clé nouvelle
+    M-->>G: ticket créé (identifiant)
+  else doublon
+    M-->>G: ticket existant renvoyé (pas de nouvelle création)
+  else refus
+    M-->>G: erreur, aucune création
+  end
+  G-->>T: confirmation avec identifiant du ticket

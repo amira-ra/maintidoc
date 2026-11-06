@@ -1,0 +1,13 @@
+flowchart LR
+  D["PDF / image<br/>+ ligne inventaire.csv"] --> T{"PDF texte<br/>ou scanné ?"}
+  T -->|texte| P["PyMuPDF<br/>texte, tableaux, figures"]
+  T -->|scanné / image| O["OCR local<br/>texte + position"]
+  P --> C["Découpage<br/>passages · tableaux · figures"]
+  O --> C
+  C --> M["Métadonnées<br/>document_id, version, page,<br/>element_id, équipement, groupes"]
+  M --> E1["Embeddings texte<br/>(multilingue)"]
+  M --> E2["Embeddings image<br/>(texte-image)"]
+  E1 --> Q[("Index Qdrant")]
+  E2 --> Q
+  M --> PG[("PostgreSQL")]
+  D --> S3[("MinIO<br/>fichiers originaux")]

@@ -1,0 +1,30 @@
+flowchart TB
+  UI["<b>Interface</b><br/>Streamlit<br/>question + photo"]
+  API["<b>API</b><br/>FastAPI"]
+  CP1{{"CP1<br/>droits d'accès"}}
+  ORCH["<b>Orchestration</b><br/>LangGraph"]
+  VLM["<b>Modèle<br/>vision-langage</b>"]
+  RAG["<b>Recherche<br/>documentaire</b><br/>Qdrant + reranker"]
+  STO[("<b>Stockage</b><br/>PostgreSQL · MinIO<br/>index Qdrant")]
+  MCPC["Client MCP"]
+  MCPS["<b>Outil MCP</b><br/>historique · tickets"]
+  CP3{{"CP3<br/>citations vérifiées"}}
+  CP2{{"CP2<br/>validation humaine"}}
+  ING["Ingestion hors ligne<br/>PyMuPDF · OCR · embeddings"]
+
+  UI -->|"requête + jeton"| API
+  API --> CP1
+  CP1 -->|"utilisateur + groupes"| ORCH
+  ORCH <-->|"photo / observations"| VLM
+  ORCH <-->|"filtre groupes / passages + figures"| RAG
+  RAG <--> STO
+  ING --> STO
+  ORCH <-->|"equipment_id / historique"| MCPC
+  MCPC <-->|"droits revérifiés à chaque appel"| MCPS
+  ORCH -->|"réponse brouillon"| CP3
+  CP3 -->|"réponse sourcée ou clarification"| UI
+  ORCH -->|"brouillon de ticket"| CP2
+  CP2 -->|"approval_token"| MCPC
+
+  classDef cp fill:#ffe8cc,stroke:#d9480f,stroke-width:2px,color:#000
+  class CP1,CP2,CP3 cp

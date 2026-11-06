@@ -1,0 +1,24 @@
+sequenceDiagram
+  actor T as Technicien
+  participant API as API FastAPI
+  participant G as LangGraph
+  participant V as VLM
+  participant R as Recherche (Qdrant + reranker)
+  participant M as MCP maintenance
+  T->>API: question + photo + jeton
+  API->>API: CP1 groupes de l'utilisateur
+  API->>G: requête + groupes
+  G->>V: photo : description, équipement probable
+  V-->>G: observations (voyant orange fixe, plaque)
+  G->>R: texte + image, filtre sur groupes autorisés
+  R-->>G: passages et figures autorisés (reclassés)
+  opt historique utile (max 3 appels MCP)
+    G->>M: get_equipment_history / get_open_tickets
+    M-->>G: interventions, tickets ouverts
+  end
+  G->>G: rédaction + CP3 citations existent et soutiennent
+  alt sources insuffisantes, photo floue, contradiction
+    G-->>T: demande de clarification ou abstention
+  else réponse établie
+    G-->>T: réponse sourcée (document, page, figure)
+  end
